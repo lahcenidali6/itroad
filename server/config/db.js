@@ -1,5 +1,6 @@
 import knex from 'knex';
-
+import dotenv from 'dotenv';
+dotenv.config();
 const db = knex({
   client: 'pg',
   connection: {
@@ -9,5 +10,5 @@ const db = knex({
     database: process.env.DB_NAME,
   }
 });
-
+console.log( process.env.DB_HOST)
 export default db;

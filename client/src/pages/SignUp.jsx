@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import logo from "../assets/file_1750785495914_ITROADGROUPLogo.png";
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 export default function SignUp() {
   const [fullName, setFullName] = useState("");
@@ -21,7 +22,7 @@ export default function SignUp() {
     setLoading(true);
 
     try {
-      const response = await fetch("http://localhost:5000/api/users/register", {
+      const response = await fetch(`${API_BASE}/api/users/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
