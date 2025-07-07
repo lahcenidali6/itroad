@@ -2,6 +2,7 @@ import express from "express"
 import authRouter from "./routes/authRoute.js"
 import userRoute from "./routes/userRoute.js"
 import cors from "cors"
+const PORT = process.env.PORT || 5000;
 const app = express()
 app.use(cors({
   origin: 'http://localhost:5173',              
@@ -18,6 +19,5 @@ app.get("/",(req,res)=>{
 
 
 
-app.listen(5000,()=>{
-    console.log("server is running!")
-})
+
+app.listen(PORT, () => console.log(`Server running on ${PORT}`));
