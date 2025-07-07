@@ -3,10 +3,10 @@ import knex from 'knex';
 const db = knex({
   client: 'pg',
   connection: {
-    host: 'localhost',
-    user: 'postgres',
-    password: '12345',
-    database: 'itroad'
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
   }
 });
 
