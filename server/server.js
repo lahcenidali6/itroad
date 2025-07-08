@@ -15,9 +15,7 @@ app.use("/api", authRouter);
 app.use("/api/users",userRoute)
 
 
-app.get("/",(req,res)=>{
-    res.send("home page")
-})
+
 
 
 
