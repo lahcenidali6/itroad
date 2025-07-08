@@ -242,13 +242,21 @@ export default function Documents() {
                 >
                   <option value="Active">Active</option>
                 </select>
-                <input
-                  type="file"
-                  accept="application/pdf"
-                  onChange={handleFileChange}
-                  className="w-full"
-                  required
-                />
+                <div className="relative">
+                  <input
+                    type="file"
+                    accept="application/pdf"
+                    onChange={handleFileChange}
+                    className="block w-full text-sm text-gray-500
+                                file:mr-4 file:py-2 file:px-4
+                                file:rounded-md file:border-0
+                                file:text-sm file:font-semibold
+                                file:bg-blue-50 file:text-blue-700
+                                hover:file:bg-blue-100
+                               "
+                    required
+                  />
+                </div>
                 <div className="flex justify-end gap-3">
                   <button
                     type="button"

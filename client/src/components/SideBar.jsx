@@ -69,14 +69,14 @@ export default function SideBar() {
           <NavLink
             to="/dashboard/profile"
             className={`flex items-center gap-3 px-3 py-2 rounded hover:bg-gray-100 cursor-pointer content-center ${
-              isActive("/dashboard/profile")
+              isActive("/dashboard/profile") ||isActive("/dashboard") 
                 ? "bg-gray-200 font-semibold text-gray-700"
                 : ""
             }`}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              fill={isActive("/dashboard/profile") ? "currentColor" : "none"}
+              fill={isActive("/dashboard/profile") ||isActive("/dashboard") ? "currentColor" : "none"}
               viewBox="0 0 24 24"
               strokeWidth={1.5}
               stroke="currentColor"
