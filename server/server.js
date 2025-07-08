@@ -6,7 +6,8 @@ import cors from "cors"
 const PORT = process.env.PORT || 5000;
 const app = express()
 app.use(cors({
-  origin: 'https://itroad-iqks7ra3m-lahcenidali6s-projects.vercel.app',              
+  origin: ['https://itroad-iqks7ra3m-lahcenidali6s-projects.vercel.app', 
+  'http://localhost:5173' ]            
 }));
 
 

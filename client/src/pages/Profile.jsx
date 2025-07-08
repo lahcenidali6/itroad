@@ -1,10 +1,11 @@
-
 import { useState, useEffect, useRef } from "react";
-import defaultAvatar from "../assets/defaulAvatar.jpg"
+import defaultAvatar from "../assets/defaulAvatar.jpg";
 import { MdEdit } from "react-icons/md";
 import { IoSaveSharp } from "react-icons/io5";
+import Loader from "../components/Loader";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
+
 export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false);
   const [profile, setProfile] = useState({
@@ -18,15 +19,15 @@ export default function ProfilePage() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [hovering, setHovering] = useState(false);
+  const [loading, setLoading] = useState(false); // loading state
   const fileInputRef = useRef(null);
 
   useEffect(() => {
     const fetchProfile = async () => {
       try {
+        setLoading(true);
         const res = await fetch(`${API_BASE}/api/users/me`, {
-          headers: {
-            Authorization: localStorage.getItem("authorization"),
-          },
+          headers: { Authorization: localStorage.getItem("authorization") },
         });
         const data = await res.json();
         setProfile({
@@ -37,10 +38,13 @@ export default function ProfilePage() {
           joinedAt: data.joined_at || "",
           avatarUrl: data.avatar_url || defaultAvatar,
         });
-      } catch (err) {
+      } catch {
         setError("Failed to fetch profile");
+      } finally {
+        setLoading(false);
       }
     };
+
     fetchProfile();
   }, []);
 
@@ -75,15 +79,14 @@ export default function ProfilePage() {
       });
       const result = await res.json();
       if (res.ok && result.data?.[0]) {
-        console.log(result.data)
         const updated = result.data[0];
-         setProfile({
-          fullName: result.data[0].full_name || "",
-          email: result.data[0].email || "",
-          phone: result.data[0].phone || "",
-          location: result.data[0].location || "",
-          joinedAt: result.data[0].joined_at || "",
-          avatarUrl: result.data[0].avatar_url || defaultAvatar,
+        setProfile({
+          fullName: updated.full_name || "",
+          email: updated.email || "",
+          phone: updated.phone || "",
+          location: updated.location || "",
+          joinedAt: updated.joined_at || "",
+          avatarUrl: updated.avatar_url || defaultAvatar,
         });
         setMessage("Profile updated successfully");
         setIsEditing(false);
@@ -102,12 +105,12 @@ export default function ProfilePage() {
     formData.append("file", file);
     formData.append("upload_preset", "itRoadFils");
     formData.append("folder", "avatars");
+
     try {
       const cloudRes = await fetch("https://api.cloudinary.com/v1_1/du5lmgzy1/image/upload", {
         method: "POST",
         body: formData,
       });
-
       const data = await cloudRes.json();
 
       const updateRes = await fetch(`${API_BASE}/api/users/update/avatar`, {
@@ -116,12 +119,12 @@ export default function ProfilePage() {
           "Content-Type": "application/json",
           Authorization: localStorage.getItem("authorization"),
         },
-        body: JSON.stringify({ avatar_url: data.secure_url}),
+        body: JSON.stringify({ avatar_url: data.secure_url }),
       });
       const result = await updateRes.json();
-      console.log(result)
+
       if (updateRes.ok) {
-        setProfile((prev) => ({ ...prev, avatarUrl:data.secure_url }));
+        setProfile((prev) => ({ ...prev, avatarUrl: data.secure_url }));
         setMessage("Avatar updated successfully");
       } else {
         setError("Failed to update avatar");
@@ -131,15 +134,17 @@ export default function ProfilePage() {
     }
   };
 
+  if (loading) return <Loader />;
+
   return (
     <div className="flex-1 h-screen overflow-y-auto p-6 md:p-10">
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-3xl font-bold">Profile</h1>
         <button
           onClick={() => (isEditing ? handleSave() : setIsEditing(true))}
-          className="px-3 py-2 bg-[#addaea] text-black rounded hover:bg-[#92cee3] flex flex-nowrap items-center"
+          className="px-3 py-2 bg-[#addaea] text-black rounded hover:bg-[#92cee3] flex items-center"
         >
-          {isEditing ? <IoSaveSharp />: <MdEdit />}
+          {isEditing ? <IoSaveSharp /> : <MdEdit />}
         </button>
       </div>
 

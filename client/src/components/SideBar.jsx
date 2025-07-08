@@ -1,14 +1,15 @@
 import { useEffect, useState } from "react";
-import { useNavigate, NavLink  } from "react-router-dom";
-import defaultAvatar from "../assets/defaulAvatar.jpg"
+import { useNavigate, NavLink, useLocation } from "react-router-dom";
+import { TbLayoutSidebarFilled } from "react-icons/tb";
+import defaultAvatar from "../assets/defaulAvatar.jpg";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
+
 export default function SideBar() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [activeItem, setActiveItem] = useState("profile");
   const [user, setUser] = useState({ full_name: "", avatar_url: "" });
-
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -38,39 +39,48 @@ export default function SideBar() {
     navigate("/login");
   }
 
+  const isActive = (path) => location.pathname === path;
+
   return (
     <div>
       <aside
-        className={`fixed z-30 top-0 left-0 h-full w-64 bg-white shadow p-6 transform transition-transform duration-300 ease-in-out ${
+        className={`fixed  z-30 top-0 left-0 h-full w-64 bg-white shadow p-6 transform transition-transform duration-300 ease-in-out ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         } md:translate-x-0 md:static md:block`}
       >
+        <button
+          className="md:hidden absolute  top-1 right-1 z-40 bg-white  p-1 rounded"
+          onClick={() => setSidebarOpen(!sidebarOpen)}
+        >
+          <TbLayoutSidebarFilled size={18} />
+        </button>
         <div className="flex items-center gap-3 mb-8">
           <img
             src={user.avatar_url}
             alt="Profile"
             className="w-10 h-10 rounded-full"
           />
-          <span className="font-medium capitalize truncate">{user.full_name}</span>
+          <span className="font-medium capitalize truncate">
+            {user.full_name}
+          </span>
         </div>
 
         <nav className="space-y-1 text-sm">
           <NavLink
             to="/dashboard/profile"
-            onClick={() => setActiveItem("profile")}
             className={`flex items-center gap-3 px-3 py-2 rounded hover:bg-gray-100 cursor-pointer content-center ${
-              activeItem === "profile" ? "bg-gray-200 font-semibold" : ""
+              isActive("/dashboard/profile")
+                ? "bg-gray-200 font-semibold text-gray-700"
+                : ""
             }`}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              fill="none"
+              fill={isActive("/dashboard/profile") ? "currentColor" : "none"}
               viewBox="0 0 24 24"
               strokeWidth={1.5}
               stroke="currentColor"
-              className={`size-6 ${
-                activeItem === "profile" ? "fill-current text-gray-700" : ""
-              }`}
+              className="size-6"
             >
               <path
                 strokeLinecap="round"
@@ -83,22 +93,19 @@ export default function SideBar() {
 
           <NavLink
             to="/dashboard/documents"
-            onClick={() => setActiveItem("documents")}
             className={`flex items-center gap-3 px-3 py-2 rounded hover:bg-gray-100 cursor-pointer ${
-              activeItem === "documents"
-                ? "bg-gray-200 font-semibold text-gray-700 "
+              isActive("/dashboard/documents")
+                ? "bg-gray-200 font-semibold text-gray-700"
                 : ""
             }`}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              fill="none"
+              fill={isActive("/dashboard/documents") ? "currentColor" : "none"}
               viewBox="0 0 24 24"
               strokeWidth={1.5}
               stroke="currentColor"
-              className={`size-6 ${
-                activeItem === "documents" ? "fill-current text-gray-700" : ""
-              }`}
+              className="size-6"
             >
               <path
                 strokeLinecap="round"
@@ -131,12 +138,11 @@ export default function SideBar() {
           </div>
         </nav>
       </aside>
-
       <button
-        className="md:hidden fixed top-2 left-2 z-40 bg-white shadow p-1 rounded"
+        className={`md:hidden absolute  z-40 bg-white  p-1 rounded ${sidebarOpen? "hidden":"block"}`}
         onClick={() => setSidebarOpen(!sidebarOpen)}
       >
-        ☰
+        <TbLayoutSidebarFilled size={20} />
       </button>
     </div>
   );

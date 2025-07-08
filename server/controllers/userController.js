@@ -1,5 +1,6 @@
 import db from "../config/db.js";
-import cloudinary from "cloudinary";
+import { v2 as cloudinary } from "cloudinary";
+
 import {
   updateUser,
   register,
@@ -155,10 +156,12 @@ export const deleteDocumentController = async (req, res) => {
   try {
     const documentId = req.params.documentId;
     const userId = req.user.id;
+
+
     const user = await db("users").where({ id: userId }).first();
+    if (!user) return res.status(400).json({ error: "User not found" });
 
-    if (!user) return res.status(400).json({ error: "user not found" });
-
+   
     const document = await db("documents")
       .where({ id: documentId, user_id: userId })
       .first();
@@ -168,13 +171,23 @@ export const deleteDocumentController = async (req, res) => {
         .status(404)
         .json({ error: "Document not found or not owned by user" });
     }
-    await cloudinary.uploader.destroy(document.file_id, {
-      resource_type: "raw",
-    });
+
+    try {
+      await cloudinary.uploader.destroy(document.file_id, {
+        resource_type: "raw", 
+      });
+    } catch (cloudError) {
+      console.error("Cloudinary error:", cloudError);
+      return res.status(500).json({ error: "Failed to delete file from Cloudinary" });
+    }
+
+
     await deleteDocument(documentId, userId);
-    return res.status(200).json({ message: "document has been deleted" });
+
+    return res.status(200).json({ message: "Document has been deleted" });
   } catch (err) {
-    return res.status(500).json({ error: "somthings went happen!" });
+    console.error("Delete document error:", err);
+    return res.status(500).json({ error: "Something went wrong!" });
   }
 };
 

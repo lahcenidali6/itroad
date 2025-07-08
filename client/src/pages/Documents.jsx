@@ -1,6 +1,9 @@
 import { useState, useEffect } from "react";
 import { MdEditDocument } from "react-icons/md";
-
+import { MdDelete } from "react-icons/md";
+import { FaEye } from "react-icons/fa";
+import { IoCloudDownload } from "react-icons/io5";
+import Loader from "../components/Loader";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 export default function Documents() {
@@ -13,6 +16,7 @@ export default function Documents() {
   });
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false); // loading state for fetching documents
   const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
@@ -31,7 +35,8 @@ export default function Documents() {
 
   const fetchDocuments = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/users/documents", {
+      setLoading(true);
+      const res = await fetch(`${API_BASE}/api/users/documents`, {
         headers: { Authorization: localStorage.getItem("authorization") },
       });
       if (!res.ok) throw new Error();
@@ -39,18 +44,17 @@ export default function Documents() {
       setDocuments(data || []);
     } catch {
       setError("Failed to load documents.");
+    } finally {
+      setLoading(false);
     }
   };
 
   const deleteDocument = async (id) => {
     try {
-      const res = await fetch(
-        `${API_BASE}/api/users/documents/${id}`,
-        {
-          method: "DELETE",
-          headers: { Authorization: localStorage.getItem("authorization") },
-        }
-      );
+      const res = await fetch(`${API_BASE}/api/users/documents/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: localStorage.getItem("authorization") },
+      });
       if (!res.ok) throw new Error();
       const data = await res.json();
       setMessage(data.message);
@@ -77,6 +81,7 @@ export default function Documents() {
       form.append("file", formData.file);
       form.append("upload_preset", "itRoadFils");
       form.append("folder", "documents");
+
       const cloudRes = await fetch(
         `https://api.cloudinary.com/v1_1/du5lmgzy1/raw/upload`,
         {
@@ -84,12 +89,12 @@ export default function Documents() {
           body: form,
         }
       );
-      console.log(await cloudRes)
       const cloudData = await cloudRes.json();
 
       const fileUrl = cloudData.secure_url;
       const fileId = cloudData.public_id;
-      if(!fileId) throw new Error("fieled upload the file")
+      if (!fileId) throw new Error("Failed to upload the file");
+
       const res = await fetch(`${API_BASE}/api/users/documents`, {
         method: "POST",
         headers: {
@@ -100,7 +105,7 @@ export default function Documents() {
           name: formData.name,
           status: formData.status,
           file_url: fileUrl,
-          file_id:fileId,
+          file_id: fileId,
         }),
       });
 
@@ -119,129 +124,159 @@ export default function Documents() {
   };
 
   return (
-    <div className="flex-1 h-screen overflow-y-auto p-6 md:p-10">
-      <div className="flex justify-between mb-6">
-        <h3 className="text-2xl font-semibold">Documents</h3>
-        <button
-          onClick={() => setShowModal(true)}
-          className="px-3 py-1 bg-[#addaea] text-black rounded hover:bg-[#92cee3] flex flex-nowrap items-center"
-        >
-         <MdEditDocument />
-        </button>
-      </div>
-
-      <div className="overflow-x-auto border border-gray-200 rounded-md ">
-        <table className="min-w-full text-sm bg-white   border-gray-200 ">
-          <thead>
-            <tr className="text-black text-left">
-              <th className="px-6 py-4 font-medium">Document Name</th>
-              <th className="px-6 py-4 font-medium">Status</th>
-              <th className="px-6 py-4 font-medium">Last Updated</th>
-              <th className="px-6 py-4 font-medium text-gray-500">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {documents.map((doc) => (
-              <tr key={doc.id} className="border-t border-gray-200">
-                <td className="px-6 py-4 text-gray-900 first-letter:uppercase">{doc.name}</td>
-                <td className="px-6 py-4">
-                  <span className="inline-block bg-gray-100 text-gray-800 rounded-lg px-4 py-1 text-sm">
-                    {doc.status}
-                  </span>
-                </td>
-                <td className="px-6 py-4 text-gray-500">
-                  {new Date(doc.last_updated).toISOString().split("T")[0]}
-                </td>
-                <td className="px-6 py-4 flex items-center space-x-4 text-sm">
-                  <button
-                    onClick={() => deleteDocument(doc.id)}
-                    className="px-2 py-1 hover:bg-red-500 text-red-500 border hover:text-white rounded"
-                  >
-                    Delete
-                  </button>
-                  <a
-                    href={doc.file_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-[#42c0ee] font-bold "
-                  >
-                    View
-                  </a>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {message && (
-        <div className="fixed bottom-5 right-5 bg-green-600 text-white px-4 py-2 rounded shadow z-50">
-          {message}
-        </div>
-      )}
-      {error && (
-        <div className="fixed bottom-5 right-5 bg-red-600 text-white px-4 py-2 rounded shadow z-50">
-          {error}
-        </div>
-      )}
-
-      {showModal && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-[2px] bg-opacity-50">
-          <form
-            onSubmit={handleAddDocument}
-            className="bg-white rounded-lg p-6 space-y-4 w-96"
-          >
-            <h4 className="text-lg font-semibold mb-2">Add Document</h4>
-            <input
-              type="text"
-              placeholder="Document Name"
-              className="w-full border rounded px-3 py-2"
-              value={formData.name}
-              onChange={(e) =>
-                setFormData({ ...formData, name: e.target.value })
-              }
-              required
-            />
-            <select
-              className="w-full border rounded px-3 py-2"
-              value={formData.status}
-              onChange={(e) =>
-                setFormData({ ...formData, status: e.target.value })
-              }
+    <>
+      {!loading && (
+        <div className="flex-1 h-screen overflow-y-auto p-6 md:p-10">
+          <div className="flex justify-between mb-6">
+            <h3 className="text-2xl font-semibold">Documents</h3>
+            <button
+              onClick={() => setShowModal(true)}
+              className="px-3 py-1 bg-[#addaea] text-black rounded hover:bg-[#92cee3] flex items-center gap-1"
             >
-              <option value="Active">Active</option>
-            </select>
-            <input
-              type="file"
-              accept="application/pdf"
-              onChange={handleFileChange}
-              className="w-full"
-              required
-            />
-            <div className="flex justify-end gap-3">
-              <button
-                type="button"
-                onClick={() => setShowModal(false)}
-                className="text-red-400"
-                disabled={uploading}
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className={`px-3 py-1 text-black rounded ${
-                  !formData.file || uploading
-                    ? "bg-gray-300 cursor-not-allowed"
-                    : "bg-[#addaea] hover:bg-[#92cee3]"
-                }`}
-                disabled={!formData.file || uploading}
-              >
-                {uploading ? "Saving" : "Save"}
-              </button>
+              <MdEditDocument />
+            </button>
+          </div>
+
+          {/* Table */}
+
+          {documents.length > 0 ? (
+            <div className="overflow-x-auto border border-gray-200 rounded-md">
+              <table className="min-w-full text-sm bg-white border-gray-200">
+                <thead>
+                  <tr className="text-black text-left">
+                    <th className="px-6 py-4 font-medium">Document Name</th>
+                    <th className="px-6 py-4 font-medium">Status</th>
+                    <th className="px-6 py-4 font-medium">Last Updated</th>
+                    <th className="px-6 py-4 font-medium text-gray-500">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {documents.map((doc) => (
+                    <tr key={doc.id} className="border-t border-gray-200">
+                      <td className="px-6 py-4 text-gray-900 first-letter:uppercase">
+                        {doc.name}
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="inline-block bg-gray-100 text-gray-800 rounded-lg px-4 py-1 text-sm">
+                          {doc.status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-gray-500">
+                        {new Date(doc.last_updated).toISOString().split("T")[0]}
+                      </td>
+                      <td className="px-6 py-4 flex items-center space-x-4 text-sm">
+                        <a
+                          href={doc.file_url.replace(
+                            "/upload/",
+                            "/upload/fl_attachment/"
+                          )}
+                          className="text-gray-700"
+                          download
+                        >
+                          <IoCloudDownload size={20} />
+                        </a>
+                        <a
+                          href={doc.file_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-gray-700"
+                        >
+                          <FaEye size={20} />
+                        </a>
+                        <button
+                          onClick={() => deleteDocument(doc.id)}
+                          className="text-red-500 cursor-pointer"
+                        >
+                          <MdDelete size={20} />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-          </form>
+          ) : (
+            <div className="text-gray-500 text-center mt-10">
+              No documents found.
+            </div>
+          )}
+
+          {/* Messages */}
+          {message && (
+            <div className="fixed bottom-5 right-5 bg-green-600 text-white px-4 py-2 rounded shadow z-50 ">
+              {message}
+            </div>
+          )}
+          {error && (
+            <div className="fixed bottom-5 right-5 bg-red-600 text-white px-4 py-2 rounded shadow z-50">
+              {error}
+            </div>
+          )}
+
+          {/*Modal */}
+          {showModal && (
+            <div className="fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+              <form
+                onSubmit={handleAddDocument}
+                className="bg-white rounded-lg p-6 space-y-4 w-96"
+              >
+                <h4 className="text-lg font-semibold mb-2">Add Document</h4>
+                <input
+                  type="text"
+                  placeholder="Document Name"
+                  className="w-full border rounded px-3 py-2"
+                  value={formData.name}
+                  onChange={(e) =>
+                    setFormData({ ...formData, name: e.target.value })
+                  }
+                  required
+                />
+                <select
+                  className="w-full border rounded px-3 py-2"
+                  value={formData.status}
+                  onChange={(e) =>
+                    setFormData({ ...formData, status: e.target.value })
+                  }
+                >
+                  <option value="Active">Active</option>
+                </select>
+                <input
+                  type="file"
+                  accept="application/pdf"
+                  onChange={handleFileChange}
+                  className="w-full"
+                  required
+                />
+                <div className="flex justify-end gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setShowModal(false)}
+                    className="text-red-400"
+                    disabled={uploading}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className={`px-3 py-1 text-black rounded ${
+                      !formData.file || uploading
+                        ? "bg-gray-300 cursor-not-allowed"
+                        : "bg-[#addaea] hover:bg-[#92cee3]"
+                    }`}
+                    disabled={!formData.file || uploading}
+                  >
+                    {uploading ? "Saving" : "Save"}
+                  </button>
+                </div>
+              </form>
+            </div>
+          )}
         </div>
       )}
-    </div>
+
+      {loading && <Loader />}
+    </>
   );
 }
