@@ -36,9 +36,11 @@ export const userInfo = async (req, res) => {
 
 export const userRegisterController = async (req, res) => {
   try {
+
     const isStrongPassword = (password) =>
       /^(?=.*[A-Za-z])(?=.*\d).{6,}$/.test(password);
     const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    const isvalidPhone =(phoneNumber) =>/^\+?[0-9]{10,14}$/.test(phoneNumber);
 
     const { password, email, full_name, phone, location } = req.body;
 
@@ -54,7 +56,10 @@ export const userRegisterController = async (req, res) => {
     }
 
     if (!isValidEmail(email)) {
-      return res.status(400).json({ error: "Invalid email!" });
+      return res.status(400).json({ error: "Invalid email !" });
+    }
+    if (!isvalidPhone(phone)) {
+      return res.status(400).json({ error: "Invalid phone number !" });
     }
 
     const existingUser = await db("users").where({ email }).first();
