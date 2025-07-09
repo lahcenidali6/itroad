@@ -1,6 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App.jsx";
+import PublicRoute from "./PublicRoute.jsx";
 import "./index.css";
 
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
@@ -9,7 +10,7 @@ import Dashboard from "./pages/Dashboard.jsx";
 import Profile from "./pages/Profile.jsx";
 import Documents from "./pages/Documents.jsx";
 import ProtectedRoute from "./ProtectedRoute.jsx";
-import SignUp from "./pages/SignUp.jsx"
+import SignUp from "./pages/SignUp.jsx";
 
 const router = createBrowserRouter([
   {
@@ -17,16 +18,21 @@ const router = createBrowserRouter([
     element: <App />,
     children: [
       {
-        index: true,
-        element: <Login />,
-      },
-      {
-        path: "/login",
-        element: <Login />,
-      },
-       {
-        path: "/signup",
-        element: <SignUp />,
+        element: <PublicRoute />,
+        children: [
+          {
+            index: true, // for "/"
+            element: <Login />,
+          },
+          {
+            path: "/login",
+            element: <Login />,
+          },
+          {
+            path: "/signup",
+            element: <SignUp />,
+          },
+        ],
       },
       {
         element: <ProtectedRoute allowedRoles={["user"]} />,
@@ -54,6 +60,7 @@ const router = createBrowserRouter([
     ],
   },
 ]);
+
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
