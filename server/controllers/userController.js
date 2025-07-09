@@ -118,9 +118,9 @@ export const userUpdateController = async (req, res) => {
     }
 
     if (email && !isValidEmail(email)) {
-      return res.status(400).json({ error: "Invalid email!" });
+      return res.status(400).json({ error: "Invalid email hhhh!" });
     }
-    if (phone && isvalidPhone(phone)) {
+    if (phone && !isvalidPhone(phone)) {
       return res.status(400).json({ error: "Invalid phone number !" });
     }
 
