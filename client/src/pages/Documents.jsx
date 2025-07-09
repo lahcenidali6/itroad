@@ -197,7 +197,7 @@ export default function Documents() {
               </table>
             </div>
           ) : (
-            <div className="text-gray-500 text-center mt-10">No documents found.</div>
+            <div className="text-gray-500 text-center mt-10 ">No documents found.</div>
           )}
 
           {message && (

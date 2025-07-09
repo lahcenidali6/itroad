@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import defaultAvatar from "../assets/defaulAvatar.jpg";
 import { MdEdit } from "react-icons/md";
 import { IoSaveSharp } from "react-icons/io5";
+import { FiLoader } from "react-icons/fi";
 import Loader from "../components/Loader";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
@@ -19,7 +20,8 @@ export default function ProfilePage() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [hovering, setHovering] = useState(false);
-  const [loading, setLoading] = useState(false); // loading state
+  const [loading, setLoading] = useState(false); 
+  const [updating, setupdating] = useState(false)
   const fileInputRef = useRef(null);
 
   useEffect(() => {
@@ -64,6 +66,7 @@ export default function ProfilePage() {
 
   const handleSave = async () => {
     try {
+      setupdating(true)
       const res = await fetch(`${API_BASE}/api/users/update`, {
         method: "PUT",
         headers: {
@@ -95,6 +98,9 @@ export default function ProfilePage() {
       }
     } catch {
       setError("Server error");
+    }
+    finally{
+      setupdating(false)
     }
   };
 
@@ -144,7 +150,7 @@ export default function ProfilePage() {
           onClick={() => (isEditing ? handleSave() : setIsEditing(true))}
           className="px-3 py-2 bg-[#addaea] text-black rounded hover:bg-[#92cee3] flex items-center"
         >
-          {isEditing ? <IoSaveSharp /> : <MdEdit />}
+          {isEditing ? updating? <FiLoader className="text-gray-600 animate-spin" size={18} /> :<IoSaveSharp /> : <MdEdit />}
         </button>
       </div>
 
