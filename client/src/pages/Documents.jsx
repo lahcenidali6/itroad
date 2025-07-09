@@ -212,7 +212,7 @@ export default function Documents() {
           )}
 
           {showModal && (
-            <div className="fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-50">
+            <div className="fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm ">
               <form
                 onSubmit={handleAddDocument}
                 className="bg-white rounded-lg p-6 space-y-4 w-96"

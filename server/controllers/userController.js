@@ -101,6 +101,7 @@ export const userRegisterController = async (req, res) => {
 
 export const userUpdateController = async (req, res) => {
   const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const isvalidPhone =(phoneNumber) =>/^\+?[0-9]{10,14}$/.test(phoneNumber);
 
   try {
     const { email, full_name, phone, location, avatar_url } = req.body;
@@ -118,6 +119,9 @@ export const userUpdateController = async (req, res) => {
 
     if (email && !isValidEmail(email)) {
       return res.status(400).json({ error: "Invalid email!" });
+    }
+    if (phone && isvalidPhone(phone)) {
+      return res.status(400).json({ error: "Invalid phone number !" });
     }
 
     const user = await db("users").where({ id: req.user.id }).first();
