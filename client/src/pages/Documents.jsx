@@ -3,6 +3,7 @@ import { MdEditDocument } from "react-icons/md";
 import { MdDelete } from "react-icons/md";
 import { FaEye } from "react-icons/fa";
 import { IoCloudDownload } from "react-icons/io5";
+import { FiLoader } from "react-icons/fi";
 import Loader from "../components/Loader";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
@@ -16,8 +17,9 @@ export default function Documents() {
   });
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
-  const [loading, setLoading] = useState(false); // loading state for fetching documents
+  const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
 
   useEffect(() => {
     fetchDocuments();
@@ -51,6 +53,7 @@ export default function Documents() {
 
   const deleteDocument = async (id) => {
     try {
+      setDeletingId(id);
       const res = await fetch(`${API_BASE}/api/users/documents/${id}`, {
         method: "DELETE",
         headers: { Authorization: localStorage.getItem("authorization") },
@@ -61,6 +64,8 @@ export default function Documents() {
       setDocuments((prev) => prev.filter((doc) => doc.id !== id));
     } catch {
       setError("Failed to delete document.");
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -137,8 +142,6 @@ export default function Documents() {
             </button>
           </div>
 
-          {/* Table */}
-
           {documents.length > 0 ? (
             <div className="overflow-x-auto border border-gray-200 rounded-md">
               <table className="min-w-full text-sm bg-white border-gray-200">
@@ -147,9 +150,7 @@ export default function Documents() {
                     <th className="px-6 py-4 font-medium">Document Name</th>
                     <th className="px-6 py-4 font-medium">Status</th>
                     <th className="px-6 py-4 font-medium">Last Updated</th>
-                    <th className="px-6 py-4 font-medium text-gray-500">
-                      Actions
-                    </th>
+                    <th className="px-6 py-4 font-medium text-gray-500">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -168,10 +169,7 @@ export default function Documents() {
                       </td>
                       <td className="px-6 py-4 flex items-center space-x-4 text-sm">
                         <a
-                          href={doc.file_url.replace(
-                            "/upload/",
-                            "/upload/fl_attachment/"
-                          )}
+                          href={doc.file_url.replace("/upload/", "/upload/fl_attachment/")}
                           className="text-gray-700"
                           download
                         >
@@ -187,7 +185,8 @@ export default function Documents() {
                         </a>
                         <button
                           onClick={() => deleteDocument(doc.id)}
-                          className="text-red-500 cursor-pointer"
+                          className={`text-red-500 ${deletingId === doc.id ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
+                          disabled={deletingId === doc.id}
                         >
                           <MdDelete size={20} />
                         </button>
@@ -198,14 +197,11 @@ export default function Documents() {
               </table>
             </div>
           ) : (
-            <div className="text-gray-500 text-center mt-10">
-              No documents found.
-            </div>
+            <div className="text-gray-500 text-center mt-10">No documents found.</div>
           )}
 
-          {/* Messages */}
           {message && (
-            <div className="fixed bottom-5 right-5 bg-green-600 text-white px-4 py-2 rounded shadow z-50 ">
+            <div className="fixed bottom-5 right-5 bg-green-600 text-white px-4 py-2 rounded shadow z-50">
               {message}
             </div>
           )}
@@ -215,9 +211,8 @@ export default function Documents() {
             </div>
           )}
 
-          {/*Modal */}
           {showModal && (
-            <div className="fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+            <div className="fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-50">
               <form
                 onSubmit={handleAddDocument}
                 className="bg-white rounded-lg p-6 space-y-4 w-96"
@@ -242,21 +237,13 @@ export default function Documents() {
                 >
                   <option value="Active">Active</option>
                 </select>
-                <div className="relative">
-                  <input
-                    type="file"
-                    accept="application/pdf"
-                    onChange={handleFileChange}
-                    className="block w-full text-sm text-gray-500
-                                file:mr-4 file:py-2 file:px-4
-                                file:rounded-md file:border-0
-                                file:text-sm file:font-semibold
-                                file:bg-blue-50 file:text-blue-700
-                                hover:file:bg-blue-100
-                               "
-                    required
-                  />
-                </div>
+                <input
+                  type="file"
+                  accept="application/pdf"
+                  onChange={handleFileChange}
+                  className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                  required
+                />
                 <div className="flex justify-end gap-3">
                   <button
                     type="button"
@@ -268,14 +255,10 @@ export default function Documents() {
                   </button>
                   <button
                     type="submit"
-                    className={`px-3 py-1 text-black rounded ${
-                      !formData.file || uploading
-                        ? "bg-gray-300 cursor-not-allowed"
-                        : "bg-[#addaea] hover:bg-[#92cee3]"
-                    }`}
+                    className={`px-3 py-1 text-black rounded ${!formData.file || uploading ? "bg-gray-300 cursor-not-allowed" : "bg-[#addaea] hover:bg-[#92cee3]"}`}
                     disabled={!formData.file || uploading}
                   >
-                    {uploading ? "Saving" : "Save"}
+                    {uploading ? <FiLoader className="text-gray-600 animate-spin" size={18} /> : "Save"}
                   </button>
                 </div>
               </form>

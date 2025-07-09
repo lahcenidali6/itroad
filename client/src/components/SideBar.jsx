@@ -67,16 +67,21 @@ export default function SideBar() {
 
         <nav className="space-y-1 text-sm">
           <NavLink
+            onClick={() => setSidebarOpen(false)}
             to="/dashboard/profile"
             className={`flex items-center gap-3 px-3 py-2 rounded hover:bg-gray-100 cursor-pointer content-center ${
-              isActive("/dashboard/profile") ||isActive("/dashboard") 
+              isActive("/dashboard/profile") || isActive("/dashboard")
                 ? "bg-gray-200 font-semibold text-gray-700"
                 : ""
             }`}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              fill={isActive("/dashboard/profile") ||isActive("/dashboard") ? "currentColor" : "none"}
+              fill={
+                isActive("/dashboard/profile") || isActive("/dashboard")
+                  ? "currentColor"
+                  : "none"
+              }
               viewBox="0 0 24 24"
               strokeWidth={1.5}
               stroke="currentColor"
@@ -92,6 +97,7 @@ export default function SideBar() {
           </NavLink>
 
           <NavLink
+            onClick={() => setSidebarOpen(false)}
             to="/dashboard/documents"
             className={`flex items-center gap-3 px-3 py-2 rounded hover:bg-gray-100 cursor-pointer ${
               isActive("/dashboard/documents")
@@ -139,7 +145,9 @@ export default function SideBar() {
         </nav>
       </aside>
       <button
-        className={`md:hidden absolute  z-40 bg-white  p-1 rounded ${sidebarOpen? "hidden":"block"}`}
+        className={`md:hidden absolute  z-40 bg-white  p-1 rounded ${
+          sidebarOpen ? "hidden" : "block"
+        }`}
         onClick={() => setSidebarOpen(!sidebarOpen)}
       >
         <TbLayoutSidebarFilled size={20} />
